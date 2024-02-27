@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 
-	"github.com/bxcodec/go-clean-arch/domain"
+	"github.com/nhat8002nguyen/audio-stream-be/domain"
 )
 
 // VideoService represent the video's usecases
@@ -71,7 +71,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func (a *VideoHandler) HandleStreamWs(c echo.Context) error {
-	conn, err := upgrader.Upgrade(c.Response().Writer, c.Request(), c.Response().Header())
+	conn, err := upgrader.Upgrade(c.Response().Writer, c.Request(), nil)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}

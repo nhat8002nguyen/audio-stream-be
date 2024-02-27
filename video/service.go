@@ -1,10 +1,10 @@
-package article
+package video
 
 import (
 	"context"
 	"io"
 
-	"github.com/bxcodec/go-clean-arch/domain"
+	"github.com/nhat8002nguyen/audio-stream-be/domain"
 )
 
 type VideoRepository interface {
@@ -23,7 +23,7 @@ func NewService(v VideoRepository) *Service {
 	}
 }
 
-func (s *Service) SearchedVideos(ctx context.Context, text string, amount int64) ([]domain.SearchedVideo, error) {
+func (s *Service) SearchVideos(ctx context.Context, text string, amount int64) ([]domain.SearchedVideo, error) {
 	return s.videoRepo.SearchVideos(text, amount)
 }
 

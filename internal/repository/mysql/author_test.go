@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 
-	repository "github.com/bxcodec/go-clean-arch/internal/repository/mysql"
+	repository "github.com/nhat8002nguyen/audio-stream-be/internal/repository/mysql"
 )
 
 func TestGetAuthorByID(t *testing.T) {

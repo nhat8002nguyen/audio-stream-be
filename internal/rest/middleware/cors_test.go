@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/bxcodec/go-clean-arch/internal/rest/middleware"
+	"github.com/nhat8002nguyen/audio-stream-be/internal/rest/middleware"
 )
 
 func TestCORS(t *testing.T) {

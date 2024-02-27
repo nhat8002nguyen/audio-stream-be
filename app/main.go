@@ -12,12 +12,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
 
-	mysqlRepo "github.com/bxcodec/go-clean-arch/internal/repository/mysql"
+	mysqlRepo "github.com/nhat8002nguyen/audio-stream-be/internal/repository/mysql"
+	thirdparties "github.com/nhat8002nguyen/audio-stream-be/internal/repository/third-parties"
+	"github.com/nhat8002nguyen/audio-stream-be/video"
 
-	"github.com/bxcodec/go-clean-arch/article"
-	"github.com/bxcodec/go-clean-arch/internal/rest"
-	"github.com/bxcodec/go-clean-arch/internal/rest/middleware"
 	"github.com/joho/godotenv"
+	"github.com/nhat8002nguyen/audio-stream-be/article"
+	"github.com/nhat8002nguyen/audio-stream-be/internal/rest"
+	"github.com/nhat8002nguyen/audio-stream-be/internal/rest/middleware"
 )
 
 const (
@@ -79,6 +81,10 @@ func main() {
 	// Build service Layer
 	svc := article.NewService(articleRepo, authorRepo)
 	rest.NewArticleHandler(e, svc)
+
+	videoRepo := thirdparties.NewYoutubeRepo()
+	videoSvc := video.NewService(videoRepo)
+	rest.NewVideoHandler(e, videoSvc)
 
 	// Start Server
 	addres := os.Getenv("SERVER_ADDRESS")

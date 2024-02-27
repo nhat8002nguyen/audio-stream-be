@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/bxcodec/go-clean-arch/domain"
+	"github.com/nhat8002nguyen/audio-stream-be/domain"
 )
 
 type AuthorRepository struct {

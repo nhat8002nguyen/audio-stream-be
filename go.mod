@@ -1,4 +1,4 @@
-module github.com/bxcodec/go-clean-arch
+module github.com/nhat8002nguyen/audio-stream-be
 
 go 1.21
 
