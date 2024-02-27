@@ -6,7 +6,7 @@ type SearchedVideo struct {
 	Website   string          `json:"website"`
 	URL       string          `json:"url"`
 	Thumbnail *VideoThumbnail `json:"thumbnail"`
-	Long      int64           `json:"long"`
+	Duration  string          `json:"duration"`
 }
 
 type VideoThumbnail struct {

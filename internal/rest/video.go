@@ -71,6 +71,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func (a *VideoHandler) HandleStreamWs(c echo.Context) error {
+
 	conn, err := upgrader.Upgrade(c.Response().Writer, c.Request(), nil)
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})

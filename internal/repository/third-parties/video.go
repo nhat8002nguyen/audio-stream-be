@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	kkdaiYoutube "github.com/kkdai/youtube/v2"
 	"github.com/nhat8002nguyen/audio-stream-be/domain"
@@ -15,19 +16,26 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
-type YoutubeRepository struct{}
+type YoutubeRepository struct {
+	query      *string
+	maxResults *int64
+}
 
 func NewYoutubeRepo() *YoutubeRepository {
-	return &YoutubeRepository{}
+	r := &YoutubeRepository{
+		query:      flag.String("query", "", "Search term"),
+		maxResults: flag.Int64("max-results", 0, "Max YouTube results"),
+	}
+	// Parse flag only one, otherwise the program will be failed
+	flag.Parse()
+	return r
 }
 
 func (s *YoutubeRepository) SearchVideos(text string, amount int64) ([]domain.SearchedVideo, error) {
 	developerKey := os.Getenv("GOOGLE_DEV_KEY")
 
-	query := flag.String("query", text, "Search term")
-	maxResults := flag.Int64("max-results", amount, "Max YouTube results")
-
-	flag.Parse()
+	s.query = &text
+	s.maxResults = &amount
 
 	service, err := youtube.NewService(context.TODO(), option.WithAPIKey(developerKey))
 	if err != nil {
@@ -35,43 +43,53 @@ func (s *YoutubeRepository) SearchVideos(text string, amount int64) ([]domain.Se
 		return nil, err
 	}
 
-	// Make the API call to YouTube.
-	call := service.Search.List([]string{"id,snippet"}).
-		Q(*query).
-		MaxResults(*maxResults)
+	// Make the API call to YouTube to search videos by search term.
+	call := service.Search.List([]string{"id, snippet"}).
+		Q(*s.query).
+		MaxResults(*s.maxResults)
 	response, err := call.Do()
 	if err != nil {
 		log.Printf("Error querying videos: %v", err)
 		return nil, err
 	}
 
-	// Group video, channel, and playlist results in separate lists.
-	videos := make(map[string]string)
-	channels := make(map[string]string)
-	playlists := make(map[string]string)
-
 	// Iterate through each item and add it to the correct list.
-	results := make([]domain.SearchedVideo, len(videos))
+	videoIds := make([]string, 0, amount)
 	for _, item := range response.Items {
-		switch item.Id.Kind {
-		case "youtube#video":
-			videos[item.Id.VideoId] = item.Snippet.Title
-			results = append(results, domain.SearchedVideo{
-				Id:      item.Id.VideoId,
-				Title:   item.Snippet.Title,
-				Website: "youtube",
-				URL:     fmt.Sprintf("https://www.youtube.com/watch?v=%s", item.Id.VideoId),
-				Thumbnail: &domain.VideoThumbnail{
-					URL:    item.Snippet.Thumbnails.Default.Url,
-					Width:  item.Snippet.Thumbnails.Default.Width,
-					Height: item.Snippet.Thumbnails.Default.Height,
-				},
-			})
-		case "youtube#channel":
-			channels[item.Id.ChannelId] = item.Snippet.Title
-		case "youtube#playlist":
-			playlists[item.Id.PlaylistId] = item.Snippet.Title
+		if item.Id.Kind == "youtube#video" && item.Id.VideoId != "" {
+			videoIds = append(videoIds, item.Id.VideoId)
 		}
+	}
+
+	// If no videos found, return
+	if len(videoIds) == 0 {
+		return nil, domain.ErrNotFound
+	}
+
+	// Create a new call to get video details
+	videoListCall := service.Videos.List([]string{"id", "snippet", "contentDetails"}).Id(strings.Join(videoIds, ","))
+	resp, err := videoListCall.Do()
+	if err != nil {
+		log.Printf("Error getting video details: %v", err)
+		return nil, err
+	}
+
+	results := make([]domain.SearchedVideo, 0, amount)
+
+	// Loop through video details and access content details
+	for _, item := range resp.Items {
+		results = append(results, domain.SearchedVideo{
+			Id:      item.Id,
+			Title:   item.Snippet.Title,
+			Website: "youtube",
+			URL:     fmt.Sprintf("https://www.youtube.com/watch?v=%s", item.Id),
+			Thumbnail: &domain.VideoThumbnail{
+				URL:    item.Snippet.Thumbnails.Default.Url,
+				Width:  item.Snippet.Thumbnails.Default.Width,
+				Height: item.Snippet.Thumbnails.Default.Height,
+			},
+			Duration: item.ContentDetails.Duration,
+		})
 	}
 
 	return results, nil
