@@ -89,6 +89,7 @@ func (s *YoutubeRepository) SearchVideos(text string, amount int64) ([]domain.Se
 				Height: item.Snippet.Thumbnails.Default.Height,
 			},
 			Duration: item.ContentDetails.Duration,
+			Channel:  item.Snippet.ChannelTitle,
 		})
 	}
 

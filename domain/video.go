@@ -7,6 +7,7 @@ type SearchedVideo struct {
 	URL       string          `json:"url"`
 	Thumbnail *VideoThumbnail `json:"thumbnail"`
 	Duration  string          `json:"duration"`
+	Channel   string          `json:"channel"`
 }
 
 type VideoThumbnail struct {
